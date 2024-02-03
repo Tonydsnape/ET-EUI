@@ -11,77 +11,94 @@ namespace ET
             if (session.DomainScene().SceneType != SceneType.Account)
             {
                 Log.Error("不是Account场景");
-                response.Error = ErrorCode.ERR_NetWorkError;
-                reply();
+                session.Dispose();
                 return;
             }
 
             session.RemoveComponent<SessionAcceptTimeoutComponent>();
 
+            if (session.GetComponent<SessionAcceptTimeoutComponent>() != null)
+            {
+                response.Error = ErrorCode.ERR_RequestRepeatedly;
+                reply();
+                session.Disconnect().Coroutine();
+                return;
+            }
+
             if (string.IsNullOrEmpty(request.AccountName) || string.IsNullOrEmpty(request.Password))
             {
-                response.Error = ErrorCode.ERR_NetWorkError;
+                response.Error = ErrorCode.ERR_LoginInfoIsNull;
                 reply();
-                session.Dispose();
+                session.Disconnect().Coroutine();
                 return;
             }
 
-            if (Regex.IsMatch(request.AccountName.Trim(), @"^(?=.*[0-9].*)(?=.*[A-Za-z].*).{6,20}$"))
+            if (Regex.IsMatch(request.AccountName.Trim(), @"^(?=.*[0-9].*)(?=.*[A-Z].*).(?=.*[a-z].*).{6,20}$"))
             {
-                response.Error = ErrorCode.ERR_NetWorkError;
+                response.Error = ErrorCode.ERR_AccountNameFromError;
                 reply();
-                session.Dispose();
+                session.Disconnect().Coroutine();
                 return;
             }
 
-            if (Regex.IsMatch(request.Password.Trim(), @"^(?=.*[0-9].*)(?=.*[A-Za-z].*).{6,20}$"))
+            if (Regex.IsMatch(request.Password.Trim(), @"^(?=.*[0-9].*)(?=.*[A-Z].*).(?=.*[a-z].*).{6,20}$"))
             {
-                response.Error = ErrorCode.ERR_NetWorkError;
+                response.Error = ErrorCode.ERR_PasswordFormError;
                 reply();
-                session.Dispose();
+                session.Disconnect().Coroutine();
                 return;
             }
 
-            var accountInfoList = await DBManagerComponent.Instance.GetZoneDB(session.DomainZone())
-                    .Query<Account>(d => d.AccountName.Equals(request.AccountName.Trim()));
-            Account account = null;
-            if (accountInfoList.Count > 0)
+            using (session.AddComponent<SessionLockingComponent>())
             {
-                account = accountInfoList[0];
-                session.AddChild(account);
-                if (account.AccountType == (int)AccountType.BlackList)
+                using (await CoroutineLockComponent.Instance.Wait(CoroutineLockType.LoginAccount, request.AccountName.Trim().GetHashCode()))
                 {
-                    response.Error = ErrorCode.ERR_NetWorkError;
-                    reply();
-                    session.Dispose();
-                    return;
-                }
+                    var accountInfoList = await DBManagerComponent.Instance.GetZoneDB(session.DomainZone())
+                            .Query<Account>(d => d.AccountName.Equals(request.AccountName.Trim()));
+                    Account account = null;
+                    if (accountInfoList != null && accountInfoList.Count > 0)
+                    {
+                        account = accountInfoList[0];
+                        session.AddChild(account);
+                        if (account.AccountType == (int)AccountType.BlackList)
+                        {
+                            response.Error = ErrorCode.ERR_AccountTypeIsBlackList;
+                            reply();
+                            session.Disconnect().Coroutine();
+                            account?.Dispose();
+                            return;
+                        }
 
-                if (!account.Password.Equals(request.Password))
-                {
-                    response.Error = ErrorCode.ERR_NetWorkError;
+                        if (!account.Password.Equals(request.Password))
+                        {
+                            response.Error = ErrorCode.ERR_LoginPasswordError;
+                            reply();
+                            session.Disconnect().Coroutine();
+                            account?.Dispose();
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        account = session.AddChild<Account>();
+                        account.AccountName = request.AccountName.Trim();
+                        account.Password = request.Password;
+                        account.CreateTime = TimeHelper.ServerNow();
+                        account.AccountType = (int)AccountType.General;
+                        await DBManagerComponent.Instance.GetZoneDB(session.DomainZone()).Save<Account>(account);
+                    }
+
+                    string Token = TimeHelper.ServerNow().ToString() + RandomHelper.RandomNumber(int.MinValue, int.MaxValue).ToString();
+                    session.DomainScene().GetComponent<TokenComponent>().Remove(account.Id);
+                    session.DomainScene().GetComponent<TokenComponent>().Add(account.Id, Token);
+
+                    response.AccountId = account.Id;
+                    response.Token = Token;
+
                     reply();
-                    session.Dispose();
-                    return;
+                    account?.Dispose(); 
                 }
             }
-            else
-            {
-                account = session.AddChild<Account>();
-                account.AccountName = request.AccountName.Trim();
-                account.Password = request.Password;
-                account.AccountType = (int)AccountType.General;
-                await DBManagerComponent.Instance.GetZoneDB(session.DomainZone()).Save<Account>(account);
-            }
-
-            string Token = TimeHelper.ServerNow().ToString() + RandomHelper.RandomNumber(int.MinValue, int.MaxValue).ToString();
-            session.DomainScene().GetComponent<TokenComponent>().Remove(account.Id);
-            session.DomainScene().GetComponent<TokenComponent>().Add(account.Id, Token);
-
-            response.AccountId = account.Id;
-            response.Token = Token;
-
-            reply();
         }
     }
 }
