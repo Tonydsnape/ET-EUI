@@ -33,7 +33,7 @@ namespace ET
                 return;
             }
 
-            if (Regex.IsMatch(request.AccountName.Trim(), @"^(?=.*[0-9].*)(?=.*[A-Z].*).(?=.*[a-z].*).{6,20}$"))
+            if (Regex.IsMatch(request.AccountName.Trim(), @"^(?=.*[0-9].*)(?=.*[A-Z].*).(?=.*[a-z].*).{6,20}$")) // 正则表达式验证账号格式
             {
                 response.Error = ErrorCode.ERR_AccountNameFromError;
                 reply();
@@ -41,7 +41,7 @@ namespace ET
                 return;
             }
 
-            if (Regex.IsMatch(request.Password.Trim(), @"^(?=.*[0-9].*)(?=.*[A-Z].*).(?=.*[a-z].*).{6,20}$"))
+            if (Regex.IsMatch(request.Password.Trim(), @"^(?=.*[0-9].*)(?=.*[A-Z].*).(?=.*[a-z].*).{6,20}$")) // 正则表达式验证密码格式
             {
                 response.Error = ErrorCode.ERR_PasswordFormError;
                 reply();
@@ -88,6 +88,13 @@ namespace ET
                         await DBManagerComponent.Instance.GetZoneDB(session.DomainZone()).Save<Account>(account);
                     }
 
+                    long accountSessionInstanceId = session.DomainScene().GetComponent<AccountSessionsComponent>().Get(account.Id); // 获取sessionId
+                    Session otherSession = Game.EventSystem.Get(accountSessionInstanceId) as Session; // 获取session
+                    otherSession.Send(new A2C_Disconnect() { Error = 0 }); // 发送断开连接消息
+                    otherSession.Disconnect().Coroutine(); // 断开连接
+                    session.DomainScene().GetComponent<AccountSessionsComponent>().Add(account.Id, session.InstanceId); // 添加session
+                    session.AddComponent<AccountCheckOutTimeComponent, long>(account.Id); // 10分钟后清除session
+
                     string Token = TimeHelper.ServerNow().ToString() + RandomHelper.RandomNumber(int.MinValue, int.MaxValue).ToString();
                     session.DomainScene().GetComponent<TokenComponent>().Remove(account.Id);
                     session.DomainScene().GetComponent<TokenComponent>().Add(account.Id, Token);
@@ -96,7 +103,7 @@ namespace ET
                     response.Token = Token;
 
                     reply();
-                    account?.Dispose(); 
+                    account?.Dispose();
                 }
             }
         }
