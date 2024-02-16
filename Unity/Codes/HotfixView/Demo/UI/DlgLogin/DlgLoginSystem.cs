@@ -32,6 +32,9 @@ namespace ET
                     return;
                 }
                 //TODO:登录成功后的逻辑
+                
+                self.DomainScene().GetComponent<UIComponent>().HideWindow(WindowID.WindowID_Login);
+                self.DomainScene().GetComponent<UIComponent>().ShowWindow(WindowID.WindowID_Lobby);
             }
             catch (Exception e)
             {

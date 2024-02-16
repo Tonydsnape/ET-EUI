@@ -88,10 +88,26 @@ namespace ET
                         await DBManagerComponent.Instance.GetZoneDB(session.DomainZone()).Save<Account>(account);
                     }
 
+                    StartSceneConfig
+                            startSceneConfig =
+                                    StartSceneConfigCategory.Instance.GetBySceneName(session.DomainZone(), "LoginCenter"); // 获取LoginCenter配置
+                    long loginCenterInstanceId = startSceneConfig.InstanceId;
+                    var loginAccountResponse = (L2A_LoginAccountResponse)await ActorMessageSenderComponent.Instance.Call(loginCenterInstanceId,
+                        new A2L_LoginAccountRequest() { AccountId = account.Id }); // 发送登录请求
+
+                    if (loginAccountResponse.Error != ErrorCode.ERR_Success)
+                    {
+                        response.Error = loginAccountResponse.Error;
+                        reply();
+                        session?.Disconnect().Coroutine();
+                        account?.Dispose();
+                        return;
+                    }
+
                     long accountSessionInstanceId = session.DomainScene().GetComponent<AccountSessionsComponent>().Get(account.Id); // 获取sessionId
                     Session otherSession = Game.EventSystem.Get(accountSessionInstanceId) as Session; // 获取session
-                    otherSession.Send(new A2C_Disconnect() { Error = 0 }); // 发送断开连接消息
-                    otherSession.Disconnect().Coroutine(); // 断开连接
+                    otherSession?.Send(new A2C_Disconnect() { Error = 0 }); // 发送断开连接消息
+                    otherSession?.Disconnect().Coroutine(); // 断开连接
                     session.DomainScene().GetComponent<AccountSessionsComponent>().Add(account.Id, session.InstanceId); // 添加session
                     session.AddComponent<AccountCheckOutTimeComponent, long>(account.Id); // 10分钟后清除session
 
