@@ -21,5 +21,6 @@ namespace ET
         public const int ERR_AccountTypeIsBlackList = 200006; // 账号类型是黑名单
         public const int ERR_LoginPasswordError = 200007; // 账号格式错误
         public const int ERR_RequestRepeatedly = 200008; // 请求重复
+        public const int ERR_AccountTokenError = 200009; // 账号Token错误
     }
 }
