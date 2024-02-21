@@ -7,7 +7,7 @@
             self.Awake().Coroutine();
         }
     }
-    
+
     public class ServerInfoManagerComponentDestroySystem: DestroySystem<ServerInfoManagerComponent>
     {
         public override void Destroy(ServerInfoManagerComponent self)
@@ -16,10 +16,11 @@
             {
                 serverInfo?.Dispose();
             }
+
             self.ServerInfos.Clear();
         }
     }
-    
+
     public class ServerInfoManagerComponentLoadSystem: LoadSystem<ServerInfoManagerComponent>
     {
         public override void Load(ServerInfoManagerComponent self)
@@ -28,7 +29,8 @@
         }
     }
 
-    [FriendClass(typeof(ServerInfoManagerComponent))]
+    [FriendClass(typeof (ServerInfoManagerComponent))]
+    [FriendClass(typeof (ServerInfo))]
     public static class ServerInfoManagerComponentSystem
     {
         public static async ETTask Awake(this ServerInfoManagerComponent self)
@@ -38,16 +40,28 @@
             if (serverInfoList == null || serverInfoList.Count <= 0)
             {
                 Log.Error("serverInfo count is 0");
+                self.ServerInfos.Clear();
+                var serverInfoConfigs = ServerInfoConfigCategory.Instance.GetAll();
+                foreach (var info in serverInfoConfigs.Values)
+                {
+                    ServerInfo newServerInfo = self.AddChildWithId<ServerInfo>(info.Id);
+                    newServerInfo.ServerName = info.ServerName;
+                    newServerInfo.Status = (int)ServerStatus.Normal;
+                    self.ServerInfos.Add(newServerInfo);
+                    await DBManagerComponent.Instance.GetZoneDB(self.DomainZone()).Save(newServerInfo);
+                }
+
                 return;
             }
+
             self.ServerInfos.Clear();
 
-            foreach(var serverInfo in serverInfoList)
+            foreach (var serverInfo in serverInfoList)
             {
                 self.AddChild(serverInfo);
                 self.ServerInfos.Add(serverInfo);
             }
-            
+
             await ETTask.CompletedTask;
         }
     }

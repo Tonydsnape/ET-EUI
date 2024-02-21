@@ -22,5 +22,8 @@ namespace ET
         public const int ERR_LoginPasswordError = 200007; // 账号格式错误
         public const int ERR_RequestRepeatedly = 200008; // 请求重复
         public const int ERR_AccountTokenError = 200009; // 账号Token错误
+        public const int ERR_CreateRoleNameIsNull = 200010; // 创建角色名字为空
+        public const int ERR_CreateRoleNameIsExist = 200011; // 创建角色名字已经存在
+        
     }
 }
