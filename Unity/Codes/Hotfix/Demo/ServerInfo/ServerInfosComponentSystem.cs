@@ -1,8 +1,8 @@
 ﻿namespace ET
 {
-    public class ServerInfosComponentDestroySystem: DestroySystem<ServerInfoComponent>
+    public class ServerInfosComponentDestroySystem: DestroySystem<ServerInfosComponent>
     {
-        public override void Destroy(ServerInfoComponent self)
+        public override void Destroy(ServerInfosComponent self)
         {
             foreach (var serverInfo in self.ServerInfosList)
             {
@@ -11,10 +11,10 @@
         }
     }
 
-    [FriendClass(typeof(ServerInfoComponent))]
+    [FriendClass(typeof(ServerInfosComponent))]
     public static class ServerInfosComponentSystem
     {
-        public static void Add(this ServerInfoComponent self, ServerInfo serverInfo)
+        public static void Add(this ServerInfosComponent self, ServerInfo serverInfo)
         {
             self.ServerInfosList.Add(serverInfo);
         }
