@@ -32,6 +32,13 @@ namespace ET
                     return;
                 }
                 //TODO:登录成功后的逻辑
+                
+                errorCode = await LoginHelper.GetServerInfos(self.DomainScene());
+                if (errorCode != ErrorCode.ERR_Success)
+                {
+                    Log.Error(errorCode.ToString());
+                    return;
+                }
 
                 self.DomainScene().GetComponent<UIComponent>().HideWindow(WindowID.WindowID_Login);
                 self.DomainScene().GetComponent<UIComponent>().ShowWindow(WindowID.WindowID_Server);

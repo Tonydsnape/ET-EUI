@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace ET
 {
     [FriendClass(typeof (DlgServer))]
-    [FriendClass(typeof(ServerInfosComponent))]
+    [FriendClass(typeof (ServerInfosComponent))]
     public static class DlgServerSystem
     {
         public static void RegisterUIEvent(this DlgServer self)
@@ -15,19 +15,17 @@ namespace ET
             self.View.E_EnterServerButton.AddListener(self.OnEnterServerClickHandler);
             self.View.E_ServerListLoopVerticalScrollRect.AddItemRefreshListener((Transform Transform, int Index) =>
             {
-               self.OnLoopListItemRefresh(Transform, Index);
+                self.OnLoopListItemRefresh(Transform, Index);
             });
         }
 
         public static void ShowWindow(this DlgServer self, Entity contextData = null)
         {
-            self.GetServerInfos().Coroutine();
-            
             int count = 10;
             self.AddUIScrollItems(ref self.serverCellDic, count);
             self.View.E_ServerListLoopVerticalScrollRect.SetVisible(true, count);
         }
-        
+
         public static void HideWindow(this DlgServer self)
         {
             self.RemoveUIScrollItems(ref self.serverCellDic);
@@ -37,31 +35,11 @@ namespace ET
         {
             Log.Debug("进入服务器按钮被点击了");
         }
-        
+
         public static void OnLoopListItemRefresh(this DlgServer self, Transform Transform, int Index)
         {
             Scroll_Item_serverCell item = self.serverCellDic[Index];
             item.E_ServerNameText.text = $"{Index}服";
-        }
-        
-        public static async ETTask GetServerInfos(this DlgServer self)
-        {
-            try
-            {
-                int errorCode = await LoginHelper.GetServerInfos(self.DomainScene());
-                if (errorCode != ErrorCode.ERR_Success)
-                {
-                    Log.Error(errorCode.ToString());
-                    return;
-                }
-
-                List<ServerInfo> serverInfos = self.DomainScene().GetComponent<ServerInfosComponent>().GetServerInfos();
-            }
-            catch (Exception e)
-            {
-                Log.Error(e.ToString());
-                return;
-            }
         }
     }
 }
