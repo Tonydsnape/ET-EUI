@@ -1,4 +1,7 @@
-﻿namespace ET
+﻿using NUnit.Framework;
+using System.Collections.Generic;
+
+namespace ET
 {
     public class ServerInfosComponentDestroySystem: DestroySystem<ServerInfosComponent>
     {
@@ -17,6 +20,11 @@
         public static void Add(this ServerInfosComponent self, ServerInfo serverInfo)
         {
             self.ServerInfosList.Add(serverInfo);
+        }
+        
+        public static List<ServerInfo> GetServerInfos(this ServerInfosComponent self)
+        {
+            return self.ServerInfosList;
         }
     }
 }

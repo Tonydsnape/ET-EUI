@@ -9,5 +9,6 @@ namespace ET
         WindowID_RedDot,   //红点测试界面
         WindowID_Helper,   //提示界面
     	WindowID_Test,
+		WindowID_Server,   //服务器选择界面
 	}
 }
