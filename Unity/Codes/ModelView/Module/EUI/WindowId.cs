@@ -10,5 +10,6 @@ namespace ET
         WindowID_Helper,   //提示界面
     	WindowID_Test,
 		WindowID_Server,   //服务器选择界面
+		WindowID_Roles,
 	}
 }

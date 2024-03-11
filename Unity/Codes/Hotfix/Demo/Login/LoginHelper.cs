@@ -67,7 +67,7 @@ namespace ET
             {
                 ServerInfo serverInfo = zoneScene.GetComponent<ServerInfosComponent>().AddChild<ServerInfo>();
                 serverInfo.FromMessage(serverInfoProto);
-                zoneScene.GetComponent<ServerInfosComponent>().Add(serverInfo);
+                zoneScene.GetComponent<ServerInfosComponent>().Add(serverInfo); 
             }
 
             await ETTask.CompletedTask;

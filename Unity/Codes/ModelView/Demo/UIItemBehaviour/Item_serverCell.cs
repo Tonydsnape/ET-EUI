@@ -19,6 +19,54 @@ namespace ET
 			return this;
 		}
 
+		public UnityEngine.UI.Button E_SelectButtonButton
+     	{
+     		get
+     		{
+     			if (this.uiTransform == null)
+     			{
+     				Log.Error("uiTransform is null.");
+     				return null;
+     			}
+     			if (this.isCacheNode)
+     			{
+     				if( this.m_E_SelectButtonButton == null )
+     				{
+		    			this.m_E_SelectButtonButton = UIFindHelper.FindDeepChild<UnityEngine.UI.Button>(this.uiTransform.gameObject,"E_SelectButton");
+     				}
+     				return this.m_E_SelectButtonButton;
+     			}
+     			else
+     			{
+		    		return UIFindHelper.FindDeepChild<UnityEngine.UI.Button>(this.uiTransform.gameObject,"E_SelectButton");
+     			}
+     		}
+     	}
+
+		public UnityEngine.UI.Image E_SelectButtonImage
+     	{
+     		get
+     		{
+     			if (this.uiTransform == null)
+     			{
+     				Log.Error("uiTransform is null.");
+     				return null;
+     			}
+     			if (this.isCacheNode)
+     			{
+     				if( this.m_E_SelectButtonImage == null )
+     				{
+		    			this.m_E_SelectButtonImage = UIFindHelper.FindDeepChild<UnityEngine.UI.Image>(this.uiTransform.gameObject,"E_SelectButton");
+     				}
+     				return this.m_E_SelectButtonImage;
+     			}
+     			else
+     			{
+		    		return UIFindHelper.FindDeepChild<UnityEngine.UI.Image>(this.uiTransform.gameObject,"E_SelectButton");
+     			}
+     		}
+     	}
+
 		public UnityEngine.UI.Image EImageBgImage
      	{
      		get
@@ -69,12 +117,16 @@ namespace ET
 
 		public void DestroyWidget()
 		{
+			this.m_E_SelectButtonButton = null;
+			this.m_E_SelectButtonImage = null;
 			this.m_EImageBgImage = null;
 			this.m_E_ServerNameText = null;
 			this.uiTransform = null;
 			this.DataId = 0;
 		}
 
+		private UnityEngine.UI.Button m_E_SelectButtonButton = null;
+		private UnityEngine.UI.Image m_E_SelectButtonImage = null;
 		private UnityEngine.UI.Image m_EImageBgImage = null;
 		private UnityEngine.UI.Text m_E_ServerNameText = null;
 		public Transform uiTransform = null;
