@@ -24,6 +24,7 @@ namespace ET
         public const int ERR_AccountTokenError = 200009; // 账号Token错误
         public const int ERR_CreateRoleNameIsNull = 200010; // 创建角色名字为空
         public const int ERR_CreateRoleNameIsExist = 200011; // 创建角色名字已经存在
+        public const int ERR_RoleNotExist = 200012; // 角色不存在
         
     }
 }

@@ -67,7 +67,7 @@ namespace ET
             {
                 ServerInfo serverInfo = zoneScene.GetComponent<ServerInfosComponent>().AddChild<ServerInfo>();
                 serverInfo.FromMessage(serverInfoProto);
-                zoneScene.GetComponent<ServerInfosComponent>().Add(serverInfo); 
+                zoneScene.GetComponent<ServerInfosComponent>().Add(serverInfo);
             }
 
             await ETTask.CompletedTask;
@@ -132,7 +132,7 @@ namespace ET
                 Log.Error(a2CGetRoles.Error.ToString());
                 return a2CGetRoles.Error;
             }
-            
+
             zoneScene.GetComponent<RoleInfosComponent>().RoleInfos.Clear();
             foreach (var roleInfoProto in a2CGetRoles.RoleInfo)
             {
@@ -141,6 +141,40 @@ namespace ET
                 zoneScene.GetComponent<RoleInfosComponent>().RoleInfos.Add(roleInfo);
             }
 
+            return ErrorCode.ERR_Success;
+        }
+
+        public static async ETTask<int> DeleteRole(Scene zoneScene)
+        {
+            A2C_DeleteRole a2CDeleteRole = null;
+
+            try
+            {
+                a2CDeleteRole = (A2C_DeleteRole)await zoneScene.GetComponent<SessionComponent>().Session.Call(new C2A_DeleteRole()
+                {
+                    Token = zoneScene.GetComponent<AccountInfoComponent>().Token,
+                    AccountId = zoneScene.GetComponent<AccountInfoComponent>().AccountId,
+                    RoleInfoId = zoneScene.GetComponent<RoleInfosComponent>().CurrentRoleId,
+                    ServerId = zoneScene.GetComponent<ServerInfosComponent>().CurrentServerId,
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e.ToString());
+                return ErrorCode.ERR_NetWorkError;
+            }
+
+            if (a2CDeleteRole.Error != ErrorCode.ERR_Success)
+            {
+                Log.Error(a2CDeleteRole.Error.ToString());
+                return a2CDeleteRole.Error;
+            }
+
+            int index = zoneScene.GetComponent<RoleInfosComponent>().RoleInfos
+                    .FindIndex((info) => { return info.Id == a2CDeleteRole.DeletedRoleInfoId; });
+            zoneScene.GetComponent<RoleInfosComponent>().RoleInfos.RemoveAt(index);
+            
+            await ETTask.CompletedTask;
             return ErrorCode.ERR_Success;
         }
     }
