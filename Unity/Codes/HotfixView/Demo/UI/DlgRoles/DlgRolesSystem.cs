@@ -36,14 +36,50 @@ namespace ET
 
         public static void OnRoleListRefreshHandler(this DlgRoles self, Transform transform, int index)
         {
+            Scroll_Item_Role item = self.RolesCellDic[index].BindTrans(transform);
+            RoleInfo info = self.ZoneScene().GetComponent<RoleInfosComponent>().RoleInfos[index];
+
+            item.EButton_SelectImage.color = info.Id == self.ZoneScene().GetComponent<RoleInfosComponent>().CurrentRoleId? Color.green : Color.gray;
+
+            item.ELabel_NameText.SetText(info.Name);
+            item.EButton_SelectButton.AddListener(() => { self.OnRoleItemClickHandler(info.Id); });
+        }
+
+        public static void OnRoleItemClickHandler(this DlgRoles self, long roleId)
+        {
+            self.ZoneScene().GetComponent<RoleInfosComponent>().CurrentRoleId = roleId;
+            self.View.E_RoleInfoListLoopHorizontalScrollRect.RefillCells();
         }
 
         public static async ETTask OnDeleteRoleClickHandler(this DlgRoles self)
         {
+            long roleId = self.ZoneScene().GetComponent<RoleInfosComponent>().CurrentRoleId;
+            if (roleId == 0)
+            {
+                Log.Error("请选择角色");
+                return;
+            }
+
+            try
+            {
+                int errorCode = await LoginHelper.DeleteRole(self.ZoneScene());
+                if (errorCode != ErrorCode.ERR_Success)
+                {
+                    Log.Error(errorCode.ToString());
+                    return;
+                }
+
+                self.RefreshRoleList();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e.ToString());
+            }
         }
 
         public static async ETTask OnCreateRoleClickHandler(this DlgRoles self)
         {
+            Log.Console("OnCreateRoleClickHandler");
             string name = self.View.E_nameInputInputField.text;
 
             if (string.IsNullOrEmpty(name))
@@ -60,6 +96,7 @@ namespace ET
                     Log.Error(errorCode.ToString());
                     return;
                 }
+
                 self.RefreshRoleList();
             }
             catch (Exception e)
@@ -70,6 +107,16 @@ namespace ET
 
         public static void OnStartGameClickHandler(this DlgRoles self)
         {
+            if (self.ZoneScene().GetComponent<RoleInfosComponent>().CurrentRoleId == 0)
+            {
+                Log.Error("请选择角色");
+                return;
+            }
+
+            // try
+            // {
+            //     //int errorCode = await LoginHelper
+            // }
         }
     }
 }

@@ -2,10 +2,9 @@
 
 namespace ET
 {
-    [FriendClass(typeof (RoleInfo))]
-    public class C2A_DeleteRoleHandler: AMRpcHandler<C2A_DeleteRole, A2C_DeleteRole>
+    public class C2A_GetRealmkeyHandler: AMRpcHandler<C2A_GetRealmKey, A2C_GetRealmKey>
     {
-        protected override async ETTask Run(Session session, C2A_DeleteRole request, A2C_DeleteRole response, Action reply)
+        protected override async ETTask Run(Session session, C2A_GetRealmKey request, A2C_GetRealmKey response, Action reply)
         {
             if (session.DomainScene().SceneType != SceneType.Account)
             {
@@ -28,33 +27,31 @@ namespace ET
             {
                 response.Error = ErrorCode.ERR_NetWorkError;
                 reply();
-                session.Disconnect().Coroutine();
+                session?.Disconnect().Coroutine();
                 return;
             }
-
+            
             using (session.AddComponent<SessionLockingComponent>())
             {
-                using (await CoroutineLockComponent.Instance.Wait(CoroutineLockType.CreateRole, request.AccountId))
+                using (await CoroutineLockComponent.Instance.Wait(CoroutineLockType.LoginAccount, request.AccountId))
                 {
-                    var roleInfos = await DBManagerComponent.Instance.GetZoneDB(request.ServerId)
-                            .Query<RoleInfo>(role => role.Id == request.RoleInfoId && role.ServerId == request.ServerId);
-                    if (roleInfos == null || roleInfos.Count == 0)
+                    StartSceneConfig realmStartSceneConfig = RealmGateAddressHelper.GetRealm(request.ServerId);
+
+                    R2A_GetRealmKey r2AGetRealmKey = (R2A_GetRealmKey) await MessageHelper.CallActor(realmStartSceneConfig.InstanceId, new A2R_GetRealmKey() { AccountId = request.AccountId });
+                    
+                    if(r2AGetRealmKey.Error != ErrorCode.ERR_Success)
                     {
-                        response.Error = ErrorCode.ERR_RoleNotExist;
+                        response.Error = r2AGetRealmKey.Error;
                         reply();
+                        session?.Disconnect().Coroutine();
                         return;
                     }
                     
-                    var roleInfo = roleInfos[0];
-                    session.AddChild(roleInfo);
-                    
-                    roleInfo.State = (int)RoleInfoState.Freeze;
-                    
-                    await DBManagerComponent.Instance.GetZoneDB(request.ServerId).Save(roleInfo);
-                    response.DeletedRoleInfoId = roleInfo.Id;
-                    roleInfo.Dispose();
-                    
+                    response.RealmKey = r2AGetRealmKey.RealmKey;
+                    response.RealmAddress = realmStartSceneConfig.OuterIPPort.ToString();
                     reply();
+                    
+                    session?.Disconnect().Coroutine();
                 }
             }
 

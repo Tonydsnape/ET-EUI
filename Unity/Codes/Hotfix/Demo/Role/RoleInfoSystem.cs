@@ -18,7 +18,7 @@
         {
             return new RoleInfoProto()
             {
-                Id = (int)self.Id, 
+                Id = (long)self.Id, 
                 Name = self.Name, 
                 ServerId = self.ServerId, 
                 State = self.State, 

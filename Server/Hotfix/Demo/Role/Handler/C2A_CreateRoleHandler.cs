@@ -56,6 +56,7 @@ namespace ET
                     }
 
                     RoleInfo newRoleInfo = session.AddChildWithId<RoleInfo>(IdGenerater.Instance.GenerateUnitId(request.ServerId));
+                    newRoleInfo.Id = newRoleInfo.Id;
                     newRoleInfo.Name = request.Name;
                     newRoleInfo.State = (int)RoleInfoState.Normal;
                     newRoleInfo.ServerId = request.ServerId;
