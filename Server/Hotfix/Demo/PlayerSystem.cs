@@ -8,7 +8,7 @@
         {
             public override void Awake(Player self, string a)
             {
-                self.Account = a;
+                //self.Account = a;
             }
         }
     }

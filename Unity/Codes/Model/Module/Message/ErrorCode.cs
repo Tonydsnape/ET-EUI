@@ -25,6 +25,9 @@ namespace ET
         public const int ERR_CreateRoleNameIsNull = 200010; // 创建角色名字为空
         public const int ERR_CreateRoleNameIsExist = 200011; // 创建角色名字已经存在
         public const int ERR_RoleNotExist = 200012; // 角色不存在
-        
+        public const int ERR_RequestSceneTypeError = 200013; // 请求场景类型错误
+        public const int ERR_ConnectGateKeyError = 200014; // 连接GateKey错误
+        public const int ERR_OtherAccountLogin = 200015;  //  
+
     }
 }
