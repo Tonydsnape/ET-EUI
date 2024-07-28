@@ -846,4 +846,33 @@ namespace ET
 
 	}
 
+	[ResponseType(nameof(G2C_EnterGame))]
+	[Message(OuterOpcode.C2G_EnterGame)]
+	[ProtoContract]
+	public partial class C2G_EnterGame: Object, IRequest
+	{
+		[ProtoMember(1)]
+		public int RpcId { get; set; }
+
+	}
+
+	[Message(OuterOpcode.G2C_EnterGame)]
+	[ProtoContract]
+	public partial class G2C_EnterGame: Object, IResponse
+	{
+		[ProtoMember(1)]
+		public int RpcId { get; set; }
+
+		[ProtoMember(2)]
+		public int Error { get; set; }
+
+		[ProtoMember(3)]
+		public string Message { get; set; }
+
+// 自己的unitId
+		[ProtoMember(4)]
+		public long MyId { get; set; }
+
+	}
+
 }

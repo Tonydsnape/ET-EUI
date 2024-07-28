@@ -1,23 +1,22 @@
-﻿
-
-namespace ET
+﻿namespace ET
 {
-	[FriendClass(typeof(SessionPlayerComponent))]
-	public static class SessionPlayerComponentSystem
-	{
-		public class SessionPlayerComponentDestroySystem: DestroySystem<SessionPlayerComponent>
-		{
-			public override void Destroy(SessionPlayerComponent self)
-			{
-				// 发送断线消息
-				ActorLocationSenderComponent.Instance.Send(self.PlayerId, new G2M_SessionDisconnect());
-				self.Domain.GetComponent<PlayerComponent>()?.Remove(self.AccontId);
-			}
-		}
+    [FriendClass(typeof (SessionPlayerComponent))]
+    public static class SessionPlayerComponentSystem
+    {
+        public class SessionPlayerComponentDestroySystem: DestroySystem<SessionPlayerComponent>
+        {
+            public override void Destroy(SessionPlayerComponent self)
+            {
+                // 发送断线消息
+                // ActorLocationSenderComponent.Instance.Send(self.PlayerId, new G2M_SessionDisconnect());
+                // self.Domain.GetComponent<PlayerComponent>()?.Remove(self.AccontId);
+                DisconnectHelper.KickPlayer(GetMyPlayer(self)).Coroutine();
+            }
+        }
 
-		public static Player GetMyPlayer(this SessionPlayerComponent self)
-		{
-			return self.Domain.GetComponent<PlayerComponent>().Get(self.AccontId);
-		}
-	}
+        public static Player GetMyPlayer(this SessionPlayerComponent self)
+        {
+            return self.Domain.GetComponent<PlayerComponent>().Get(self.AccontId);
+        }
+    }
 }

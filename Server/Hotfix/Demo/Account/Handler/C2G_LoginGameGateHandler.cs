@@ -3,6 +3,7 @@
 namespace ET
 {
     [FriendClass(typeof (SessionPlayerComponent))]
+    [FriendClass(typeof(SessionStateComponent))]
     public class C2G_LoginGameGateHandler: AMRpcHandler<C2G_LoginGameGate, G2C_LoginGameGate>
     {
         protected override async ETTask Run(Session session, C2G_LoginGameGate request, G2C_LoginGameGate response, Action reply)
@@ -57,6 +58,14 @@ namespace ET
                     session?.Disconnect().Coroutine();
                     return;
                 }
+
+                SessionStateComponent sessionStateComponent = session.GetComponent<SessionStateComponent>();
+                if (sessionStateComponent == null)
+                {
+                    sessionStateComponent = session.AddComponent<SessionStateComponent>();
+                }
+
+                sessionStateComponent.State = SessionState.Normal;
 
                 Player player = scene.GetComponent<PlayerComponent>().Get(request.Account);
 

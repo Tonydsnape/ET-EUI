@@ -20,7 +20,7 @@
             // 删除Mailbox,让发给Unit的ActorLocation消息重发
             unit.RemoveComponent<MailBoxComponent>();
             
-            // location加锁
+            // location加锁 
             long oldInstanceId = unit.InstanceId;
             await LocationProxyComponent.Instance.Lock(unit.Id, unit.InstanceId);
             M2M_UnitTransferResponse response = await ActorMessageSenderComponent.Instance.Call(sceneInstanceId, request) as M2M_UnitTransferResponse;

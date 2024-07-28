@@ -213,7 +213,7 @@ namespace ET
         public static async ETTask<int> EnterGame(Scene zoneScene)
         {
             string realmAddress = zoneScene.GetComponent<AccountInfoComponent>().RealmAddress;
-
+            //1.连接Realm 获取分配Gate
             R2C_LoginRealm r2CLogin = null;
 
             Session session = zoneScene.GetComponent<NetKcpComponent>().Create(NetworkHelper.ToIPEndPoint(realmAddress));
@@ -268,7 +268,29 @@ namespace ET
                 return g2CLoginGate.Error;
             }
             Log.Debug("登陆gate成功");
+
+            G2C_EnterGame g2CEnterGame = null;
+            try
+            {
+                g2CEnterGame = (G2C_EnterGame)await gateSession.Call(new C2G_EnterGame() { });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                zoneScene.GetComponent<SessionComponent>().Session.Dispose();
+                return ErrorCode.ERR_NetWorkError;
+            }
+
+            if (g2CEnterGame.Error != ErrorCode.ERR_Success)
+            {
+                Log.Error(g2CEnterGame.Error.ToString());
+                return g2CEnterGame.Error;
+            }
+            
+            Log.Debug("角色进入游戏成功！！！");
+            
             return ErrorCode.ERR_Success;
+            
         }
     }
 }
